@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 interface FormData {
@@ -44,6 +44,23 @@ function SurveyForm() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [theme] = useState<'light' | 'dark'>(
+    () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+  )
+
+  const colors = {
+    bg: theme === 'dark' ? '#1a1a1a' : '#efefef',
+    cardBg: theme === 'dark' ? '#2d2d2d' : '#efefef',
+    border: theme === 'dark' ? '#444' : '#ccc',
+    text: theme === 'dark' ? '#efefef' : '#000000',
+    textSecondary: theme === 'dark' ? '#aaa' : '#666',
+    inputBg: theme === 'dark' ? '#2d2d2d' : '#efefef',
+  }
+
+  useEffect(() => {
+    document.body.style.backgroundColor = colors.bg
+    document.body.style.color = colors.text
+  }, [colors.bg, colors.text])
 
   const handleCheckboxChange = (field: 'topics' | 'podcast_formats', value: string) => {
     setFormData((prev) => {
@@ -103,20 +120,20 @@ function SurveyForm() {
 
   return (
     <div style={{ maxWidth: '600px', margin: '50px auto', padding: '20px' }}>
-      <h1>Podcast Survey</h1>
-      <p style={{ marginBottom: '20px' }}>
+      <h1 style={{ color: colors.text }}>Podcast Survey</h1>
+      <p style={{ marginBottom: '20px', color: colors.textSecondary }}>
         Help us create better podcast content by sharing your preferences!
       </p>
 
       {success && (
         <div
           style={{
-            color: 'green',
+            color: '#0f5132',
             marginBottom: '20px',
             padding: '15px',
-            border: '1px solid green',
+            border: '1px solid #0f5132',
             borderRadius: '4px',
-            backgroundColor: '#d4edda',
+            backgroundColor: theme === 'dark' ? '#1a3d2e' : '#d4edda',
           }}
         >
           Thank you for your submission! 🎉
@@ -126,12 +143,12 @@ function SurveyForm() {
       {error && (
         <div
           style={{
-            color: 'red',
+            color: '#dc3545',
             marginBottom: '20px',
             padding: '15px',
-            border: '1px solid red',
+            border: '1px solid #dc3545',
             borderRadius: '4px',
-            backgroundColor: '#f8d7da',
+            backgroundColor: theme === 'dark' ? '#3d1a1a' : '#f8d7da',
           }}
         >
           {error}
@@ -140,7 +157,7 @@ function SurveyForm() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '20px' }}>
-          <label htmlFor="name" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label htmlFor="name" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: colors.text }}>
             Your Name *
           </label>
           <input
@@ -149,15 +166,23 @@ function SurveyForm() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
-            style={{ width: '100%', padding: '10px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc' }}
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              borderRadius: '4px',
+              border: `1px solid ${colors.border}`,
+              backgroundColor: colors.inputBg,
+              color: colors.text,
+            }}
           />
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Topics of Interest *</label>
+          <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold', color: colors.text }}>Topics of Interest *</label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
             {TOPICS.map((topic) => (
-              <label key={topic} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <label key={topic} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: colors.text }}>
                 <input
                   type="checkbox"
                   checked={formData.topics.includes(topic)}
@@ -171,26 +196,33 @@ function SurveyForm() {
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label htmlFor="description" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Description / Additional Comments *
+          <label htmlFor="description" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: colors.text }}>
+            Description / Additional Comments
           </label>
           <textarea
             id="description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            required
             rows={4}
-            style={{ width: '100%', padding: '10px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc' }}
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              borderRadius: '4px',
+              border: `1px solid ${colors.border}`,
+              backgroundColor: colors.inputBg,
+              color: colors.text,
+            }}
           />
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+          <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold', color: colors.text }}>
             Preferred Podcast Format *
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
             {PODCAST_FORMATS.map((format) => (
-              <label key={format} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <label key={format} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: colors.text }}>
                 <input
                   type="checkbox"
                   checked={formData.podcast_formats.includes(format)}
@@ -204,7 +236,7 @@ function SurveyForm() {
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label htmlFor="suggested_guest" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          <label htmlFor="suggested_guest" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: colors.text }}>
             Suggested Guest
           </label>
           <input
@@ -212,7 +244,15 @@ function SurveyForm() {
             type="text"
             value={formData.suggested_guest}
             onChange={(e) => setFormData({ ...formData, suggested_guest: e.target.value })}
-            style={{ width: '100%', padding: '10px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc' }}
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              borderRadius: '4px',
+              border: `1px solid ${colors.border}`,
+              backgroundColor: colors.inputBg,
+              color: colors.text,
+            }}
           />
         </div>
 

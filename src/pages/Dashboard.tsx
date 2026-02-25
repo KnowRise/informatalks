@@ -25,6 +25,11 @@ function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [topicStats, setTopicStats] = useState<Stats>({})
   const [formatStats, setFormatStats] = useState<Stats>({})
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+    () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+  )
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -35,6 +40,12 @@ function Dashboard() {
   useEffect(() => {
     applyFilters()
   }, [surveys, topicFilter, formatFilter, searchTerm])
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme)
+    document.body.style.backgroundColor = theme === 'dark' ? '#1a1a1a' : '#ffffff'
+    document.body.style.color = theme === 'dark' ? '#ffffff' : '#000000'
+  }, [theme])
 
   const checkAuth = async () => {
     const { data } = await supabase.auth.getSession()
@@ -99,6 +110,11 @@ function Dashboard() {
     }
 
     setFilteredSurveys(filtered)
+    setCurrentPage(1) // Reset to first page when filters change
+  }
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
   }
 
   const handleLogout = async () => {
@@ -109,23 +125,61 @@ function Dashboard() {
   const uniqueTopics = Array.from(new Set(surveys.flatMap((s) => s.topics))).sort()
   const uniqueFormats = Array.from(new Set(surveys.flatMap((s) => s.podcast_formats))).sort()
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSurveys.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentSurveys = filteredSurveys.slice(startIndex, endIndex)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(1, page), totalPages))
+  }
+
+  // Theme-based colors
+  const colors = {
+    bg: theme === 'dark' ? '#1a1a1a' : '#efefef',
+    cardBg: theme === 'dark' ? '#2d2d2d' : '#efefef',
+    border: theme === 'dark' ? '#444' : '#ccc',
+    text: theme === 'dark' ? '#efefef' : '#000000',
+    textSecondary: theme === 'dark' ? '#aaa' : '#666',
+    statsBg: theme === 'dark' ? '#2d2d2d' : '#f8f9fa',
+    filterBg: theme === 'dark' ? '#2d2d2d' : '#f8f9fa',
+  }
+
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', color: colors.text }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h1>Survey Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Logout
-        </button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            onClick={toggleTheme}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0',
+              color: colors.text,
+              border: `1px solid ${colors.border}`,
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '20px',
+            }}
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -139,12 +193,12 @@ function Dashboard() {
               <div
                 style={{
                   padding: '20px',
-                  border: '1px solid #ccc',
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '8px',
-                  backgroundColor: '#f8f9fa',
+                  backgroundColor: colors.statsBg,
                 }}
               >
-                <h3 style={{ marginTop: 0 }}>Topics ({Object.keys(topicStats).length})</h3>
+                <h3 style={{ marginTop: 0, color: colors.text }}>Topics ({Object.keys(topicStats).length})</h3>
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                   {Object.entries(topicStats)
                     .sort(([, a], [, b]) => b - a)
@@ -155,7 +209,8 @@ function Dashboard() {
                           display: 'flex',
                           justifyContent: 'space-between',
                           padding: '8px 0',
-                          borderBottom: '1px solid #dee2e6',
+                          borderBottom: `1px solid ${colors.border}`,
+                          color: colors.text,
                         }}
                       >
                         <span>{topic}</span>
@@ -168,12 +223,12 @@ function Dashboard() {
               <div
                 style={{
                   padding: '20px',
-                  border: '1px solid #ccc',
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '8px',
-                  backgroundColor: '#f8f9fa',
+                  backgroundColor: colors.statsBg,
                 }}
               >
-                <h3 style={{ marginTop: 0 }}>Podcast Formats ({Object.keys(formatStats).length})</h3>
+                <h3 style={{ marginTop: 0, color: colors.text }}>Podcast Formats ({Object.keys(formatStats).length})</h3>
                 <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                   {Object.entries(formatStats)
                     .sort(([, a], [, b]) => b - a)
@@ -184,7 +239,8 @@ function Dashboard() {
                           display: 'flex',
                           justifyContent: 'space-between',
                           padding: '8px 0',
-                          borderBottom: '1px solid #dee2e6',
+                          borderBottom: `1px solid ${colors.border}`,
+                          color: colors.text,
                         }}
                       >
                         <span>{format}</span>
@@ -201,19 +257,27 @@ function Dashboard() {
             style={{
               marginBottom: '20px',
               padding: '20px',
-              border: '1px solid #ccc',
+              border: `1px solid ${colors.border}`,
               borderRadius: '8px',
-              backgroundColor: '#f8f9fa',
+              backgroundColor: colors.filterBg,
             }}
           >
-            <h3 style={{ marginTop: 0 }}>Filters</h3>
+            <h3 style={{ marginTop: 0, color: colors.text }}>Filters</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Topic</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: colors.text }}>Topic</label>
                 <select
                   value={topicFilter}
                   onChange={(e) => setTopicFilter(e.target.value)}
-                  style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px' }}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    fontSize: '16px',
+                    borderRadius: '4px',
+                    backgroundColor: colors.cardBg,
+                    color: colors.text,
+                    border: `1px solid ${colors.border}`,
+                  }}
                 >
                   <option value="all">All Topics</option>
                   {uniqueTopics.map((topic) => (
@@ -225,11 +289,19 @@ function Dashboard() {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Format</label>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: colors.text }}>Format</label>
                 <select
                   value={formatFilter}
                   onChange={(e) => setFormatFilter(e.target.value)}
-                  style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px' }}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    fontSize: '16px',
+                    borderRadius: '4px',
+                    backgroundColor: colors.cardBg,
+                    color: colors.text,
+                    border: `1px solid ${colors.border}`,
+                  }}
                 >
                   <option value="all">All Formats</option>
                   {uniqueFormats.map((format) => (
@@ -241,7 +313,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: colors.text }}>
                   Search (Name/Description/Guest)
                 </label>
                 <input
@@ -249,7 +321,15 @@ function Dashboard() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Type to search..."
-                  style={{ width: '100%', padding: '8px', fontSize: '16px', borderRadius: '4px' }}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    fontSize: '16px',
+                    borderRadius: '4px',
+                    backgroundColor: colors.cardBg,
+                    color: colors.text,
+                    border: `1px solid ${colors.border}`,
+                  }}
                 />
               </div>
             </div>
@@ -260,7 +340,14 @@ function Dashboard() {
                   setFormatFilter('all')
                   setSearchTerm('')
                 }}
-                style={{ padding: '8px 16px', cursor: 'pointer' }}
+                style={{
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  backgroundColor: colors.cardBg,
+                  color: colors.text,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '4px',
+                }}
               >
                 Clear Filters
               </button>
@@ -269,26 +356,28 @@ function Dashboard() {
 
           {/* Results */}
           <div>
-            <h3>
-              Survey Results ({filteredSurveys.length} of {surveys.length})
+            <h3 style={{ color: colors.text }}>
+              Survey Results (Showing {startIndex + 1}-{Math.min(endIndex, filteredSurveys.length)} of{' '}
+              {filteredSurveys.length})
             </h3>
             {filteredSurveys.length === 0 ? (
-              <p>No surveys found with the current filters.</p>
+              <p style={{ color: colors.textSecondary }}>No surveys found with the current filters.</p>
             ) : (
-              <div style={{ display: 'grid', gap: '15px' }}>
-                {filteredSurveys.map((survey) => (
-                  <div
-                    key={survey.id}
-                    style={{
-                      padding: '15px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: '#ffffff',
-                    }}
-                  >
-                    <div style={{ marginBottom: '10px' }}>
-                      <strong style={{ fontSize: '18px' }}>{survey.name}</strong>
-                      <span style={{ marginLeft: '10px', color: '#666', fontSize: '14px' }}>
+              <>
+                <div style={{ display: 'grid', gap: '15px' }}>
+                  {currentSurveys.map((survey) => (
+                    <div
+                      key={survey.id}
+                      style={{
+                        padding: '15px',
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '8px',
+                        backgroundColor: colors.cardBg,
+                      }}
+                    >
+                      <div style={{ marginBottom: '10px' }}>
+                        <strong style={{ fontSize: '18px', color: colors.text }}>{survey.name}</strong>
+                        <span style={{ marginLeft: '10px', color: colors.textSecondary, fontSize: '14px' }}>
                         {new Date(survey.created_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -300,11 +389,12 @@ function Dashboard() {
                             style={{
                               display: 'inline-block',
                               padding: '4px 8px',
-                              backgroundColor: '#e7f3ff',
+                              backgroundColor: colors.statsBg,
                               borderRadius: '4px',
                               marginRight: '8px',
                               marginBottom: '4px',
                               fontSize: '14px',
+                              borderColor: colors.border,
                             }}
                           >
                             📂 {topic}
@@ -318,11 +408,12 @@ function Dashboard() {
                             style={{
                               display: 'inline-block',
                               padding: '4px 8px',
-                              backgroundColor: '#fff3cd',
+                              backgroundColor: colors.statsBg,
                               borderRadius: '4px',
                               marginRight: '8px',
                               marginBottom: '4px',
                               fontSize: '14px',
+                              borderColor: colors.border,
                             }}
                           >
                             🎙️ {format}
@@ -330,15 +421,90 @@ function Dashboard() {
                         ))}
                       </div>
                     </div>
-                    <p style={{ margin: '10px 0' }}>{survey.description}</p>
+                    <p style={{ margin: '10px 0', color: colors.text }}>{survey.description}</p>
                     {survey.suggested_guest && (
-                      <p style={{ margin: '5px 0', color: '#666' }}>
+                      <p style={{ margin: '5px 0', color: colors.textSecondary }}>
                         <strong>Suggested Guest:</strong> {survey.suggested_guest}
                       </p>
                     )}
                   </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div
+                  style={{
+                    marginTop: '30px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '10px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <button
+                    onClick={() => goToPage(1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: currentPage === 1 ? colors.border : colors.cardBg,
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '4px',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    «« First
+                  </button>
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: currentPage === 1 ? colors.border : colors.cardBg,
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '4px',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    « Prev
+                  </button>
+                  <span style={{ padding: '8px 12px', color: colors.text }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: currentPage === totalPages ? colors.border : colors.cardBg,
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '4px',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Next »
+                  </button>
+                  <button
+                    onClick={() => goToPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: '8px 12px',
+                      backgroundColor: currentPage === totalPages ? colors.border : colors.cardBg,
+                      color: colors.text,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '4px',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Last »»
+                  </button>
+                </div>
+              )}
+            </>
             )}
           </div>
         </>
