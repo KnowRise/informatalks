@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
-import { useTheme } from '../contexts/ThemeContext'
 
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { colors } = useTheme()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -53,82 +51,50 @@ function Login() {
   }
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h1 style={{ color: colors.text }}>Admin Login</h1>
-      {error && (
-        <div
-          style={{
-            color: '#dc3545',
-            marginBottom: '10px',
-            padding: '10px',
-            border: '1px solid #dc3545',
-            borderRadius: '4px',
-            backgroundColor: colors.bg === '#1a1a1a' ? '#3d1a1a' : '#f8d7da',
-          }}
-        >
-          {error}
-        </div>
-      )}
-      <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '5px', color: colors.text }}>
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '16px',
-              backgroundColor: colors.inputBg,
-              color: colors.text,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-            }}
-          />
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '5px', color: colors.text }}>
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '8px',
-              fontSize: '16px',
-              backgroundColor: colors.inputBg,
-              color: colors.text,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-            }}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '10px',
-            fontSize: '16px',
-            backgroundColor: loading ? colors.border : '#646cff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {loading ? 'Loading...' : 'Login'}
-        </button>
-      </form>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Admin Login</h1>
+        {error && (
+          <div className="text-red-700 mb-4 p-3 border border-red-700 rounded bg-red-100 dark:bg-red-900/30">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleLogin}>
+          <div className="mb-4">
+            <label htmlFor="email" className="block mb-1 text-gray-900 dark:text-gray-100">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full p-2 text-base bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="password" className="block mb-1 text-gray-900 dark:text-gray-100">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full p-2 text-base bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full p-2.5 text-base text-white border-none rounded-lg cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-400 bg-indigo-500 hover:bg-indigo-600"
+          >
+            {loading ? 'Loading...' : 'Login'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

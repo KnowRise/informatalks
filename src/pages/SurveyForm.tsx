@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { useTheme } from "../contexts/ThemeContext";
 import ThemeToggle from "../components/ThemeToggle";
+import Layout from "../components/Layout";
 
 interface FormData {
   name: string;
@@ -12,27 +12,30 @@ interface FormData {
 }
 
 const TOPICS = [
-  "Technology",
-  "Business",
-  "Health & Wellness",
-  "Entertainment",
-  "Education",
-  "Science",
-  "Politics",
-  "Sports",
-  "Arts & Culture",
+  "Software Development (Web, Mobile, Game)",
+  "Artificial Intelligence & Machine Learning",
+  "Cyber Security & Ethical Hacking",
+  "Cloud Computing & DevOps",
+  "Data Science & Big Data",
+  "Blockchain & Web3",
+  "Internet of Things (IoT) & Robotics",
+  "UI/UX Design & Product Management",
+  "Open Source Contribution",
+  "Tech Career Roadmaps (Internship & Jobs)",
+  "Startup & Digital Business",
+  "IT Student Survival Guide (Tips Kuliah)",
+  "Tech Trends & News",
+  "Competitive Programming & Hackathons",
+  "Linux & Open Source Culture",
   "Other",
 ];
 
 const PODCAST_FORMATS = [
-  "Interview",
-  "Solo Commentary",
-  "Panel Discussion",
-  "Storytelling",
-  "News & Analysis",
-  "Educational",
-  "Comedy",
-  "Debate",
+  "Expert Interview (Wawancara Dosen/Praktisi)",
+  "Alumni Success Story (Berbagi pengalaman lulusan)",
+  "Student Talk (Ngobrol santai antar mahasiswa)",
+  "Tech News Roundup (Rangkuman berita IT mingguan)",
+  "Q&A Session (Menjawab pertanyaan dari audiens)",
 ];
 
 function SurveyForm() {
@@ -46,7 +49,6 @@ function SurveyForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const { colors } = useTheme();
 
   const handleCheckboxChange = (
     field: "topics" | "podcast_formats",
@@ -61,18 +63,18 @@ function SurveyForm() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
 
     if (formData.topics.length === 0) {
-      setError("Please select at least one topic");
+      setError("Pilih minimal satu topik yang ingin kamu dengarkan");
       return;
     }
 
     if (formData.podcast_formats.length === 0) {
-      setError("Please select at least one podcast format");
+      setError("Pilih minimal satu format podcast");
       return;
     }
 
@@ -108,246 +110,128 @@ function SurveyForm() {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "50px auto", padding: "20px" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "20px",
-          justifyContent: "center",
-        }}
-      >
-        <h1 style={{ color: colors.text }}>Podcast Survey</h1>
-        <ThemeToggle />
+    <Layout>
+      <div className="flex flex-col gap-4 p-4 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_4px_rgba(255,255,255,0.1)] rounded my-4">
+        <div className="flex items-center gap-5 justify-center">
+          <h1 className="text-3xl font-bold">InformaTalks Survey</h1>
+          <ThemeToggle />
+        </div>
+        <p className="flex flex-col items-center text-slate-600 dark:text-slate-400 text-lg">
+          Bantu Kami membuat podcast yang lebih baik
+          <span>dengan mengisi survei singkat ini! 🎙️</span>
+        </p>
+
+        {success && (
+          <div className="text-green-800 p-4 border border-green-800 rounded bg-green-100 dark:bg-green-900/30">
+            Terima kasih atas partisipasi Anda! 🎉
+          </div>
+        )}
+
+        {error && (
+          <div className="text-red-700 p-4 border border-red-700 rounded bg-red-100 dark:bg-red-900/30">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label htmlFor="name" className="font-bold">
+              Nama (Opsional)
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full p-2.5 text-base rounded border border-slate-300 dark:border-slate-600"
+            />
+          </div>
+
+          <div className="flex flex-col gap-4 border border-slate-300 dark:border-slate-600 rounded p-4">
+            <label className="font-bold">
+              Topik yang ingin kamu dengarkan di podcast kami? *
+            </label>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2.5">
+              {TOPICS.map((topic) => (
+                <label key={topic} className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.topics.includes(topic)}
+                    onChange={() => handleCheckboxChange("topics", topic)}
+                    className="mr-2 cursor-pointer"
+                  />
+                  {topic}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block font-bold">
+              Description / Additional Comments
+            </label>
+            <textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              rows={4}
+              className="w-full p-2.5 text-base rounded border border-slate-300 dark:border-slate-600"
+            />
+          </div>
+
+          <div className="flex flex-col gap-4 border border-slate-300 dark:border-slate-600 rounded p-4">
+            <label className="block font-bold">
+              Preferred Podcast Format *
+            </label>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2.5">
+              {PODCAST_FORMATS.map((format) => (
+                <label
+                  key={format}
+                  className="flex items-center cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.podcast_formats.includes(format)}
+                    onChange={() =>
+                      handleCheckboxChange("podcast_formats", format)
+                    }
+                    className="mr-2 cursor-pointer"
+                  />
+                  {format}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="suggested_guest" className="block font-bold">
+              Suggested Guest
+            </label>
+            <input
+              id="suggested_guest"
+              type="text"
+              value={formData.suggested_guest}
+              onChange={(e) =>
+                setFormData({ ...formData, suggested_guest: e.target.value })
+              }
+              className="w-full p-2.5 text-base rounded border border-slate-300 dark:border-slate-600"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full p-3 text-lg font-bold text-white border-none rounded-lg cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-400 bg-indigo-500 hover:bg-indigo-600"
+          >
+            {loading ? "Submitting..." : "Submit Survey"}
+          </button>
+        </form>
       </div>
-      <p style={{ marginBottom: "20px", color: colors.textSecondary }}>
-        Help us create better podcast content by sharing your preferences!
-      </p>
-
-      {success && (
-        <div
-          style={{
-            color: "#0f5132",
-            marginBottom: "20px",
-            padding: "15px",
-            border: "1px solid #0f5132",
-            borderRadius: "4px",
-            backgroundColor: colors.bg === "#1a1a1a" ? "#1a3d2e" : "#d4edda",
-          }}
-        >
-          Thank you for your submission! 🎉
-        </div>
-      )}
-
-      {error && (
-        <div
-          style={{
-            color: "#dc3545",
-            marginBottom: "20px",
-            padding: "15px",
-            border: "1px solid #dc3545",
-            borderRadius: "4px",
-            backgroundColor: colors.bg === "#1a1a1a" ? "#3d1a1a" : "#f8d7da",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="name"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Your Name *
-          </label>
-          <input
-            id="name"
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            style={{
-              width: "100%",
-              padding: "10px",
-              fontSize: "16px",
-              borderRadius: "4px",
-              border: `1px solid ${colors.border}`,
-              backgroundColor: colors.inputBg,
-              color: colors.text,
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "10px",
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Topics of Interest *
-          </label>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "10px",
-            }}
-          >
-            {TOPICS.map((topic) => (
-              <label
-                key={topic}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  color: colors.text,
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={formData.topics.includes(topic)}
-                  onChange={() => handleCheckboxChange("topics", topic)}
-                  style={{ marginRight: "8px", cursor: "pointer" }}
-                />
-                {topic}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="description"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Description / Additional Comments
-          </label>
-          <textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            rows={4}
-            style={{
-              width: "100%",
-              padding: "10px",
-              fontSize: "16px",
-              borderRadius: "4px",
-              border: `1px solid ${colors.border}`,
-              backgroundColor: colors.inputBg,
-              color: colors.text,
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "10px",
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Preferred Podcast Format *
-          </label>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "10px",
-            }}
-          >
-            {PODCAST_FORMATS.map((format) => (
-              <label
-                key={format}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  color: colors.text,
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={formData.podcast_formats.includes(format)}
-                  onChange={() =>
-                    handleCheckboxChange("podcast_formats", format)
-                  }
-                  style={{ marginRight: "8px", cursor: "pointer" }}
-                />
-                {format}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label
-            htmlFor="suggested_guest"
-            style={{
-              display: "block",
-              marginBottom: "5px",
-              fontWeight: "bold",
-              color: colors.text,
-            }}
-          >
-            Suggested Guest
-          </label>
-          <input
-            id="suggested_guest"
-            type="text"
-            value={formData.suggested_guest}
-            onChange={(e) =>
-              setFormData({ ...formData, suggested_guest: e.target.value })
-            }
-            style={{
-              width: "100%",
-              padding: "10px",
-              fontSize: "16px",
-              borderRadius: "4px",
-              border: `1px solid ${colors.border}`,
-              backgroundColor: colors.inputBg,
-              color: colors.text,
-            }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "12px",
-            fontSize: "18px",
-            fontWeight: "bold",
-            backgroundColor: loading ? "#ccc" : "#646cff",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Submitting..." : "Submit Survey"}
-        </button>
-      </form>
-    </div>
+    </Layout>
   );
 }
 

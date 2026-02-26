@@ -1,25 +1,17 @@
-import { useTheme } from '../contexts/ThemeContext'
+import { useTheme } from "../contexts/ThemeContext";
 
 function ThemeToggle() {
-  const { theme, toggleTheme, colors } = useTheme()
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      style={{
-        padding: '10px 20px',
-        backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0',
-        color: colors.text,
-        border: `1px solid ${colors.border}`,
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontSize: '20px',
-      }}
-      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      className="px-5 py-2.5 border border-slate-600 rounded cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+      title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
     >
-      {theme === 'light' ? '🌙' : '☀️'}
+      {theme === "light" ? "🌙" : "☀️"}
     </button>
-  )
+  );
 }
 
-export default ThemeToggle
+export default ThemeToggle;
