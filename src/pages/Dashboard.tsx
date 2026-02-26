@@ -123,7 +123,7 @@ function Dashboard() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/login?admin");
+    navigate("/");
   };
 
   const uniqueTopics = Array.from(
