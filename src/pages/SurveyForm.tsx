@@ -111,14 +111,13 @@ function SurveyForm() {
 
   return (
     <Layout>
-      <div className="flex flex-col gap-4 p-4 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_4px_rgba(255,255,255,0.1)] rounded my-4">
+      <div className="w-full md:w-[25%] flex flex-col gap-4 p-6 md:p-4 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_4px_rgba(255,255,255,0.1)] rounded my-4">
         <div className="flex items-center gap-5 justify-center">
-          <h1 className="text-3xl font-bold">InformaTalks Survey</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">InformaTalks Survey</h1>
           <ThemeToggle />
         </div>
-        <p className="flex flex-col items-center text-slate-600 dark:text-slate-400 text-lg">
-          Bantu Kami membuat podcast yang lebih baik
-          <span>dengan mengisi survei singkat ini! 🎙️</span>
+        <p className="flex flex-col items-center text-lg text-center text-slate-600 dark:text-slate-400">
+          Bantu Kami membuat podcast yang lebih baik dengan mengisi survei singkat ini! 🎙️
         </p>
 
         {success && (
